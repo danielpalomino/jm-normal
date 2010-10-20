@@ -1,3 +1,5 @@
 inc/
 Makefile
+obj/
+dependencies
 
