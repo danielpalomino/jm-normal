@@ -85,8 +85,6 @@
 
 FILE *originalBlocks, *predictedI16MB, *predictedI4MB, *allIntraModes, *resultsPSNRbits;
 
-FILE *residualI4MB, *residualI16MB;
-
 static const int mb_width_cr[4] = {0, 8, 8, 16};
 static const int mb_height_cr[4] = {0, 8, 16, 16};
 
@@ -217,9 +215,7 @@ int main(int argc, char **argv) {
     predictedI16MB = fopen("../filesCoderNormal/predictedI16MB.txt","w");
     allIntraModes = fopen("../filesCoderNormal/allIntraModes.txt","w");
     resultsPSNRbits = fopen("../filesCoderNormal/resultsPSNRBits.txt","w");
-    residualI4MB = fopen("../filesCoderNormal/residualI4MB_JM.txt","w");
-    residualI16MB = fopen("../filesCoderNormal/residualI16MB_JM.txt","w");
-
+    
     alloc_encoder(&p_Enc);
 
     Configure(p_Enc->p_Vid, p_Enc->p_Inp, argc, argv);
@@ -241,9 +237,7 @@ int main(int argc, char **argv) {
     fclose(predictedI16MB);
     fclose(allIntraModes);
     fclose(resultsPSNRbits);
-    fclose(residualI4MB);
-    fclose(residualI16MB);
-
+    
     return 0;
 }
 

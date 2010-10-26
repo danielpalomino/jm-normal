@@ -253,8 +253,7 @@ void init_rdopt(Slice *currSlice) {
         p_Vid->mb16x16_cost = CALM_MF_FACTOR_THRESHOLD;
         p_RDO->lambda_mf_factor = 1.0;
     }
-    //modificação de rdcost para SADcost no fim da linha (daniel)
-    currSlice->rdcost_for_4x4_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_4x4_intra_blocks_444 : SADcost_for_4x4_intra_blocks;
+    currSlice->rdcost_for_4x4_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_4x4_intra_blocks_444 : rdcost_for_4x4_intra_blocks;
     currSlice->rdcost_for_8x8_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_8x8_intra_blocks_444 : rdcost_for_8x8_intra_blocks;
 
     if (currSlice->mb_aff_frame_flag)
@@ -514,84 +513,6 @@ distblk rdcost_for_4x4_intra_blocks(Macroblock *currMB,
     currSlice->reset_coding_state(currMB, currSlice->p_RDO->cs_cm);
 
     return rdcost;
-}
-
-/*!
- *************************************************************************************
- * DANIEL
- * \brief
- *   Cost for an 4x4 Intra block using SAD metric
- *************************************************************************************
- */
-distblk SADcost_for_4x4_intra_blocks(Macroblock *currMB,
-        int* nonzero,
-        int b8,
-        int b4,
-        int ipmode,
-        int lambda,
-        int mostProbableMode,
-        distblk min_rdcost) {
-    Slice *currSlice = currMB->p_Slice;
-    VideoParameters *p_Vid = currMB->p_Vid;
-    distblk rdcost;
-    int dummy = 0, rate;
-    distblk distortion = 0;
-    int block_x = ((b8 & 0x01) << 3) + ((b4 & 0x01) << 2);
-    int block_y = ((b8 >> 1) << 3) + ((b4 >> 1) << 2);
-    int pic_pix_x = currMB->pix_x + block_x;
-    int pic_pix_y = currMB->pix_y + block_y;
-    int pic_opix_y = currMB->opix_y + block_y;
-
-    SyntaxElement se;
-    const int *partMap = assignSE2partition[currSlice->partition_mode];
-    //--- choose data partition ---
-    DataPartition *dataPart = &(currSlice->partArr[partMap[SE_INTRAPREDMODE]]);
-
-    //===== perform forward transform, Q, IQ, inverse transform, Reconstruction =====
-    //select_transform(currMB);
-
-    currMB->ipmode_DPCM = (short) ipmode;
-    *nonzero = currMB->residual_transform_quant_luma_4x4(currMB, PLANE_Y, block_x, block_y, &dummy, 1);
-
-    //===== get distortion (SSD) of 4x4 block =====
-/*
-    distortion += compute_SSE4x4(&p_Vid->pCurImg[pic_opix_y], &p_Vid->enc_picture->imgY[pic_pix_y], pic_pix_x, pic_pix_x);
-*/
-    //===== get distortion (SAD) of 4x4 block ===== DANIEL
-    distortion += compute_SAD4x4(currMB, PLANE_Y, block_x, block_y);
-    return distortion;
-
-#if INTRA_RDCOSTCALC_ET
-    // check if already distortion larger than min_rdcost
-    if (distortion >= min_rdcost) {
-        return (distortion);
-    }
-#endif
-    currMB->ipmode_DPCM = NO_INTRA_PMODE;
-
-    //===== RATE for INTRA PREDICTION MODE  (SYMBOL MODE MUST BE SET TO CAVLC) =====
-    se.value1 = (mostProbableMode == ipmode) ? -1 : ipmode < mostProbableMode ? ipmode : ipmode - 1;
-
-    //--- set position and type ---
-    se.context = (b8 << 2) + b4;
-    se.type = SE_INTRAPREDMODE;
-
-    //--- encode and update rate ---
-    currSlice->writeIntraPredMode(&se, dataPart);
-    rate = se.len;
-
-    //===== RATE for LUMINANCE COEFFICIENTS =====
-    if (currSlice->symbol_mode == CAVLC) {
-        rate += currSlice->writeCoeff4x4_CAVLC(currMB, LUMA, b8, b4, 0);
-    } else {
-        rate += writeCoeff4x4_CABAC(currMB, PLANE_Y, b8, b4, 1);
-    }
-
-    rdcost = distortion + weighted_cost(lambda, rate); //((distblk)lambda) * rate;
-
-    currSlice->reset_coding_state(currMB, currSlice->p_RDO->cs_cm);
-
-    return distortion;
 }
 
 /*!

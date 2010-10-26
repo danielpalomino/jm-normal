@@ -41,10 +41,6 @@
 
 extern FILE *predictedI16MB, *predictedI4MB,*originalBlocks;
 
-/*
-extern FILE *residualI16MB, *residualI4MB;
-*/
-
 extern int MBType2Value(Macroblock* currMB);
 
 int cont = 0;
@@ -178,10 +174,6 @@ int mode_decision_for_I4x4_blocks_JM_High(Macroblock *currMB, int b8, int b4, in
             }
         }
     }
-
-/*
-    fprintf(residualI4MB,"\n");
-*/
 
 #if INTRA_RDCOSTCALC_NNZ
     p_Vid->nz_coeff [currMB->mbAddrX][block_x4][block_y4] = best_nz_coeff;
@@ -516,16 +508,9 @@ int mode_decision_for_I16x16_MB_RDO(Macroblock* currMB, int lambda) {
 
         currMB->i16mode = (char) k;
         currMB->cbp = currMB->residual_transform_quant_luma_16x16(currMB, PLANE_Y);
-/*
         distortionY = compute_SSE16x16_thres(&p_Vid->pCurImg[currMB->opix_y], &p_Vid->enc_picture->p_curr_img[currMB->pix_y], currMB->pix_x, currMB->pix_x, min_rdcost);
-*/
-        //DAniel Code
-        distortionY = compute_SAD16x16_thres(currMB, PLANE_Y);
 
-/*
         if (distortionY < min_rdcost - weighted_cost(lambda, 4)) {
-*/
-        if (distortionY < min_rdcost) {
             currSlice->store_coding_state(currMB, currSlice->p_RDO->cs_tmp);
             currMB->i16offset = I16Offset(currMB->cbp, currMB->i16mode);
             se.value1 = MBType2Value(currMB);
@@ -535,17 +520,12 @@ int mode_decision_for_I16x16_MB_RDO(Macroblock* currMB, int lambda) {
             currSlice->writeMB_typeInfo(currMB, &se, dataPart);
 
             rate = se.len;
-/*
+            
             if (distortionY + weighted_cost(lambda, rate) < min_rdcost) {
-*/
-            if (distortionY < min_rdcost) {
                 rate += currSlice->writeCoeff16x16(currMB, PLANE_Y);
                 currSlice->reset_coding_state(currMB, currSlice->p_RDO->cs_tmp);
 
-/*
                 rdcost = distortionY + weighted_cost(lambda, rate);
-*/
-                rdcost = distortionY;
 
                 if (rdcost < min_rdcost) {
                     min_rdcost = rdcost;
@@ -569,10 +549,6 @@ int mode_decision_for_I16x16_MB_RDO(Macroblock* currMB, int lambda) {
             }
         }
     }
-
-/*
-    fprintf(residualI16MB, "\n");
-*/
 
     currMB->i16mode = (char) best_mode;
     currMB->cbp = best_cbp;
