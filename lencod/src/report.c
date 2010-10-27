@@ -462,11 +462,11 @@ void report_log(VideoParameters *p_Vid, InputParameters *p_Inp, StatParameters *
     char timebuf[128];
 #endif
 
-    if ((p_log = fopen("log.dat", "r")) == 0) // check if file exists
+    if ((p_log = fopen("../filesCoderNormal/log.dat", "r")) == 0) // check if file exists
     {
-        if ((p_log = fopen("log.dat", "a")) == NULL) // append new statistic at the end
+        if ((p_log = fopen("../filesCoderNormal/log.dat", "a")) == NULL) // append new statistic at the end
         {
-            snprintf(errortext, ET_SIZE, "Error open file %s  \n", "log.dat");
+            snprintf(errortext, ET_SIZE, "Error open file %s  \n", "../filesCoderNormal/log.dat");
             error(errortext, 500);
         } else // Create header for new log file
         {
@@ -479,9 +479,9 @@ void report_log(VideoParameters *p_Vid, InputParameters *p_Inp, StatParameters *
         }
     } else {
         fclose(p_log);
-        if ((p_log = fopen("log.dat", "a")) == NULL) // File exists, just open for appending
+        if ((p_log = fopen("../filesCoderNormal/log.dat", "a")) == NULL) // File exists, just open for appending
         {
-            snprintf(errortext, ET_SIZE, "Error open file %s  \n", "log.dat");
+            snprintf(errortext, ET_SIZE, "Error open file %s  \n", "../filesCoderNormal/log.dat");
             error(errortext, 500);
         }
     }
@@ -571,7 +571,7 @@ void report_log(VideoParameters *p_Vid, InputParameters *p_Inp, StatParameters *
 
     fclose(p_log);
 
-    p_log = fopen("data.txt", "a");
+    p_log = fopen("../filesCoderNormal/data.txt", "a");
 
     if ((p_Stats->NumberBFrames != 0) && (p_Stats->frame_ctr[B_SLICE] != 0)) // B picture used
     {
