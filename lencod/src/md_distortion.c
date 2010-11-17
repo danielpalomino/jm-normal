@@ -28,6 +28,7 @@
 #include "mv_search.h"
 #include "md_distortion.h"
 #include "defines.h"
+#include "transform.h"
 
 extern FILE *residualI4MB,*residualI16MB;
 
@@ -193,25 +194,44 @@ distblk compute_SSE4x4(imgpel **imgRef, imgpel **imgSrc, int xRef, int xSrc) {
  ***********************************************************************
  */
 
-distblk compute_SAD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y) {
-    int i, j;
-    distblk sad;
+distblk compute_SATD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y) {
+    int i, j, k, l;
+    distblk satd;
     Slice *currSlice = currMB->p_Slice;
     int **mb_ores = currSlice->mb_ores[pl];
 
-    sad = 0;
-    for (i = block_y; i < block_y + BLOCK_SIZE; i++) {
-        for (j = block_x; j < block_x + BLOCK_SIZE; j++) {
+    int **block;
+    int **tblock;
+
+    block = (int**) malloc((sizeof(int*))*4);
+    tblock = (int**) malloc((sizeof(int*))*4);
+
+    for (i=0; i < BLOCK_SIZE; i++){
+        block[i] = (int*) malloc(sizeof(int)*4);
+        tblock[i] = (int*) malloc(sizeof(int)*4);
+    }
+
+    
+    for (k=0, i = block_y; i < block_y + BLOCK_SIZE; i++, k++) {
+        for (l=0, j = block_x; j < block_x + BLOCK_SIZE; j++, l++) {
             fprintf(residualI4MB, "%d\t",mb_ores[i][j]);
-            sad += abs(mb_ores[i][j]);
+            block[k][l] = mb_ores[i][j];
         }
         fprintf(residualI4MB,"\n");
+    }
+    
+    hadamard4x4(block,tblock);
+    satd=0;
+    for (i=0; i < BLOCK_SIZE; i++){
+        for (j = 0; j < BLOCK_SIZE; j++){
+            satd += abs(tblock[i][j]);
+        }
     }
 /*
     fprintf(residualI4MB, "%d\n",sad);
 */
     
-    return sad;
+    return satd;
 }
 
 /*!
