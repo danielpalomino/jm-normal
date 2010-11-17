@@ -254,7 +254,7 @@ void init_rdopt(Slice *currSlice) {
         p_RDO->lambda_mf_factor = 1.0;
     }
     //modificação de rdcost para SADcost no fim da linha (daniel)
-    currSlice->rdcost_for_4x4_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_4x4_intra_blocks_444 : SADcost_for_4x4_intra_blocks;
+    currSlice->rdcost_for_4x4_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_4x4_intra_blocks_444 : SSDcost_for_4x4_intra_blocks;
     currSlice->rdcost_for_8x8_intra_blocks = (p_Vid->yuv_format == YUV444) ? rdcost_for_8x8_intra_blocks_444 : rdcost_for_8x8_intra_blocks;
 
     if (currSlice->mb_aff_frame_flag)
@@ -523,7 +523,7 @@ distblk rdcost_for_4x4_intra_blocks(Macroblock *currMB,
  *   Cost for an 4x4 Intra block using SAD metric
  *************************************************************************************
  */
-distblk SADcost_for_4x4_intra_blocks(Macroblock *currMB,
+distblk SSDcost_for_4x4_intra_blocks(Macroblock *currMB,
         int* nonzero,
         int b8,
         int b4,
@@ -558,7 +558,7 @@ distblk SADcost_for_4x4_intra_blocks(Macroblock *currMB,
     distortion += compute_SSE4x4(&p_Vid->pCurImg[pic_opix_y], &p_Vid->enc_picture->imgY[pic_pix_y], pic_pix_x, pic_pix_x);
 */
     //===== get distortion (SAD) of 4x4 block ===== DANIEL
-    distortion += compute_SAD4x4(currMB, PLANE_Y, block_x, block_y);
+    distortion += compute_SSD4x4(currMB, PLANE_Y, block_x, block_y);
     return distortion;
 
 #if INTRA_RDCOSTCALC_ET

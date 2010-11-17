@@ -114,7 +114,7 @@ distblk compute_SSE16x16_thres(imgpel **imgRef, imgpel **imgSrc, int xRef, int x
 }
 
 //Daniel Daniel Daniel
-distblk compute_SAD16x16_thres(Macroblock *currMB, ColorPlane pl) {
+distblk compute_SSD16x16_thres(Macroblock *currMB, ColorPlane pl) {
     int i, j;
     distblk sad;
 
@@ -130,7 +130,7 @@ distblk compute_SAD16x16_thres(Macroblock *currMB, ColorPlane pl) {
         img_Y = &p_Vid->pCurImg[currMB->opix_y + j][currMB->pix_x];
         for (i = 0; i < 16; ++i) {
             fprintf(residualI16MB, "%d\t", img_Y[i] - predY[i]);
-            sad += abs(img_Y[i] - predY[i]);
+            sad += (img_Y[i] - predY[i]) * (img_Y[i] - predY[i]);
         }
         fprintf(residualI16MB, "\n");
     }
@@ -193,7 +193,7 @@ distblk compute_SSE4x4(imgpel **imgRef, imgpel **imgSrc, int xRef, int xSrc) {
  ***********************************************************************
  */
 
-distblk compute_SAD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y) {
+distblk compute_SSD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y) {
     int i, j;
     distblk sad;
     Slice *currSlice = currMB->p_Slice;
@@ -203,7 +203,7 @@ distblk compute_SAD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block
     for (i = block_y; i < block_y + BLOCK_SIZE; i++) {
         for (j = block_x; j < block_x + BLOCK_SIZE; j++) {
             fprintf(residualI4MB, "%d\t",mb_ores[i][j]);
-            sad += abs(mb_ores[i][j]);
+            sad += mb_ores[i][j] * mb_ores[i][j];
         }
         fprintf(residualI4MB,"\n");
     }

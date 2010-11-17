@@ -80,7 +80,7 @@ extern int  GetBestTransformP8x8 (Macroblock *currMB);
 extern byte field_flag_inference (Macroblock  *currMB);
 extern distblk rdcost_for_4x4_intra_blocks     (Macroblock *currMB, int* nonzero, int b8, int b4, int ipmode, int lambda, int mostProbableMode, distblk min_rdcost);
 //DANIEL begin
-extern distblk SADcost_for_4x4_intra_blocks     (Macroblock *currMB, int* nonzero, int b8, int b4, int ipmode, int lambda, int mostProbableMode, distblk min_rdcost);
+extern distblk SSDcost_for_4x4_intra_blocks     (Macroblock *currMB, int* nonzero, int b8, int b4, int ipmode, int lambda, int mostProbableMode, distblk min_rdcost);
 //DANIEL end
 extern distblk rdcost_for_4x4_intra_blocks_444 (Macroblock *currMB, int* nonzero, int b8, int b4, int ipmode, int lambda, int mostProbableMode, distblk min_rdcost);
 extern int valid_intra_mode(Slice *currSlice, int ipmode);

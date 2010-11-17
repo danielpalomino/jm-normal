@@ -29,7 +29,7 @@ extern distblk compute_SSE4x4  (imgpel **imgRef, imgpel **imgSrc, int xRef, int 
 extern distblk compute_SSE16x16_thres(imgpel **imgRef, imgpel **imgSrc, int xRef, int xSrc, distblk min_cost);
 
 //Daniel
-distblk compute_SAD16x16_thres(Macroblock *currMB, ColorPlane pl);
-distblk compute_SAD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y);
+distblk compute_SSD16x16_thres(Macroblock *currMB, ColorPlane pl);
+distblk compute_SSD4x4(Macroblock *currMB, ColorPlane pl, int block_x, int block_y);
 
 #endif
