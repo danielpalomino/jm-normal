@@ -520,7 +520,7 @@ int mode_decision_for_I16x16_MB_RDO(Macroblock* currMB, int lambda) {
         distortionY = compute_SSE16x16_thres(&p_Vid->pCurImg[currMB->opix_y], &p_Vid->enc_picture->p_curr_img[currMB->pix_y], currMB->pix_x, currMB->pix_x, min_rdcost);
 */
         //DAniel Code
-        distortionY = compute_SAD16x16_thres(currMB, PLANE_Y);
+        distortionY = compute_SATD16x16_thres(currMB, PLANE_Y);
 
 /*
         if (distortionY < min_rdcost - weighted_cost(lambda, 4)) {

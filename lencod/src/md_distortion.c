@@ -115,9 +115,12 @@ distblk compute_SSE16x16_thres(imgpel **imgRef, imgpel **imgSrc, int xRef, int x
 }
 
 //Daniel Daniel Daniel
-distblk compute_SAD16x16_thres(Macroblock *currMB, ColorPlane pl) {
+distblk compute_SATD16x16_thres(Macroblock *currMB, ColorPlane pl) {
     int i, j;
-    distblk sad;
+    distblk satd;
+
+    int **block;
+    int **tblock;
 
     Slice *currSlice = currMB->p_Slice;
     VideoParameters *p_Vid = currSlice->p_Vid;
@@ -125,21 +128,74 @@ distblk compute_SAD16x16_thres(Macroblock *currMB, ColorPlane pl) {
     imgpel *img_Y, *predY;
     int new_intra_mode = currMB->i16mode;
 
-    sad = 0;
+    block = (int**) malloc((sizeof(int*))*16);
+    tblock = (int**) malloc((sizeof(int*))*16);
+
+    for (i=0; i < BLOCK_SIZE; i++){
+        block[i] = (int*) malloc(sizeof(int)*16);
+        tblock[i] = (int*) malloc(sizeof(int)*16);
+    }
+
     for (j = 0; j < 16; ++j) {
         predY = curr_mpr_16x16[new_intra_mode][j];
         img_Y = &p_Vid->pCurImg[currMB->opix_y + j][currMB->pix_x];
         for (i = 0; i < 16; ++i) {
-            fprintf(residualI16MB, "%d\t", img_Y[i] - predY[i]);
-            sad += abs(img_Y[i] - predY[i]);
+            block[j][i] = img_Y[i] - predY[i];
         }
-        fprintf(residualI16MB, "\n");
     }
 
-/*
-    fprintf(residualI16MB, "%d\n", sad);
-*/
-    return sad;
+    hadamard_16x16(block,tblock);
+    satd = 0;
+    for(i=0; i<16; i++) {
+        for(j=0; j<16; j++) {
+            satd += tblock[i][j];
+        }
+    }
+
+    return satd;
+}
+
+void hadamard_16x16(int **input, int **lastterm){
+    int i, j ,k;
+    int midterm[16][16];
+	int abcdef[16][16]=
+		{{ 1 ,    1 ,    1  ,   1  ,   1  ,   1 ,    1  ,   1  ,   1  ,   1  ,   1   ,  1 ,    1  ,   1 ,    1  , 1} ,
+		{ 1 ,   -1 ,    1  ,  -1  ,   1  ,  -1 ,    1  ,  -1  ,   1  ,  -1  ,   1   , -1 ,    1  ,  -1 ,    1  ,-1} ,
+		{ 1 ,    1 ,   -1  ,  -1  ,   1  ,   1 ,   -1  ,  -1  ,   1  ,   1  ,  -1   , -1 ,    1  ,   1 ,   -1  ,-1} ,
+		{ 1 ,   -1 ,   -1  ,   1  ,   1  ,  -1 ,   -1  ,   1  ,   1  ,  -1  ,  -1   ,  1 ,    1  ,  -1 ,   -1  , 1} ,
+		{ 1 ,    1 ,    1  ,   1  ,  -1  ,  -1 ,   -1  ,  -1  ,   1  ,   1  ,   1   ,  1 ,   -1  ,  -1 ,   -1  ,-1} ,
+		{ 1 ,   -1 ,    1  ,  -1  ,  -1  ,   1 ,   -1  ,   1  ,   1  ,  -1  ,   1   , -1 ,   -1  ,   1 ,   -1  , 1} ,
+		{ 1 ,    1 ,   -1  ,  -1  ,  -1  ,  -1 ,    1  ,   1  ,   1  ,   1  ,  -1   , -1 ,   -1  ,  -1 ,    1  , 1} ,
+		{ 1 ,   -1 ,   -1  ,   1  ,  -1  ,   1 ,    1  ,  -1  ,   1  ,  -1  ,  -1   ,  1 ,   -1  ,   1 ,    1  ,-1} ,
+		{ 1 ,    1 ,    1  ,   1  ,   1  ,   1 ,    1  ,   1  ,  -1  ,  -1  ,  -1   , -1 ,   -1  ,  -1 ,   -1  ,-1} ,
+		{ 1 ,   -1 ,    1  ,  -1  ,   1  ,  -1 ,    1  ,  -1  ,  -1  ,   1  ,  -1   ,  1 ,   -1  ,   1 ,   -1  , 1} ,
+		{ 1 ,    1 ,   -1  ,  -1  ,   1  ,   1 ,   -1  ,  -1  ,  -1  ,  -1  ,   1   ,  1 ,   -1  ,  -1 ,    1  , 1} ,
+		{ 1 ,   -1 ,   -1  ,   1  ,   1  ,  -1 ,   -1  ,   1  ,  -1  ,   1  ,   1   , -1 ,   -1  ,   1 ,    1  ,-1} ,
+		{ 1 ,    1 ,    1  ,   1  ,  -1  ,  -1 ,   -1  ,  -1  ,  -1  ,  -1  ,  -1   , -1 ,    1  ,   1 ,    1  , 1} ,
+		{ 1 ,   -1 ,    1  ,  -1  ,  -1  ,   1 ,   -1  ,   1  ,  -1  ,   1  ,  -1   ,  1 ,    1  ,  -1 ,    1  ,-1} ,
+		{ 1 ,    1 ,   -1  ,  -1  ,  -1  ,  -1 ,    1  ,   1  ,  -1  ,  -1  ,   1   ,  1 ,    1  ,   1 ,   -1  ,-1} ,
+		{ 1 ,   -1 ,   -1  ,   1  ,  -1  ,   1 ,    1  ,  -1  ,  -1  ,   1  ,   1   , -1 ,    1  ,  -1 ,   -1  , 1}};
+	for(i = 0 ; i < 16 ; i++)
+		for (j=0;j< 16 ;j++)
+			midterm[i][j]=0;
+	for(i = 0 ; i < 16 ; i++)
+		for (j=0;j< 16 ;j++)
+			lastterm[i][j]=0;
+	for (i = 0 ; i < 16 ; i++){
+		for (j=0 ; j< 16 ; j++){
+			for(k=0 ; k< 16 ; k++){
+				midterm[i][j] += abcdef[i][k]*input[k][j];
+			}
+		}
+	}
+
+	for (i = 0 ; i < 16 ; i++){
+		for (j=0 ; j< 16 ; j++){
+			for(k=0 ; k< 16 ; k++){
+				lastterm[i][j] += midterm[i][k]*abcdef[k][j];
+			}
+		}
+	}
 }
 
 /*!
