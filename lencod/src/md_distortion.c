@@ -131,7 +131,7 @@ distblk compute_SATD16x16_thres(Macroblock *currMB, ColorPlane pl) {
     block = (int**) malloc((sizeof(int*))*16);
     tblock = (int**) malloc((sizeof(int*))*16);
 
-    for (i=0; i < BLOCK_SIZE; i++){
+    for (i=0; i < 16; i++){
         block[i] = (int*) malloc(sizeof(int)*16);
         tblock[i] = (int*) malloc(sizeof(int)*16);
     }
