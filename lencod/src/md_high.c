@@ -272,7 +272,14 @@ void encode_one_macroblock_high(Macroblock *currMB) {
     if (p_Inp->RCEnable && p_Inp->RCUpdateMode <= MAX_RC_MODE)
         rc_store_mad(currMB);
 
-    fprintf(allIntraModes, "%d\n", currMB->mb_type);
+/*
+    if(currMB->mb_type == P8x8)
+        for(i=0; i<4; i++)
+            fprintf(allIntraModes, "o que eh isso - %d\n", b8x8info->best[P8x8][i].mode);
+    else
+*/
+    if(currSlice->slice_type == P_SLICE)
+        fprintf(allIntraModes, "%d\n", currMB->mb_type);
 
     //===== Decide if this MB will restrict the reference frames =====
     if (p_Inp->RestrictRef)
